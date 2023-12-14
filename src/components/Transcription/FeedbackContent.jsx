@@ -1,18 +1,26 @@
-import { Typography, Grid, Paper, Box, Button } from '@mui/material';
+import { Typography, Grid, Paper, Box} from '@mui/material';
 import { Lightbulb } from '@mui/icons-material';
-import { useCallback, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import LoadingBackdrop from './LoadingBackdrop';
+import { authContext } from '../../context/AuthContext';
+import { useParams } from 'react-router-dom';
 
-export const FeedbackContent = (transcriptionDetails) => {
+export const FeedbackContent = () => {
   const [feedbackDetails, setFeedbackDetails] = useState(null);
   const [loading, setLoading] = useState(false);
+  const auth = useContext(authContext);
+  
+  const { speechId } = useParams();
 
   const handleFeedback = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get('https://apis.speakscope.tech/discurso/retroalimentacion/', { 
-    });
+      const response = await axios.get(`https://apis.speakscope.tech/discurso/retroalimentacion/generate/${speechId}`, {
+        headers: {
+          'Authorization': await auth.getToken(),
+        },
+      });
       setFeedbackDetails(response.data);
     } catch (error) {
       console.error('Error getting feedback:', error.response?.status, error.response?.data || error.message);
@@ -20,28 +28,16 @@ export const FeedbackContent = (transcriptionDetails) => {
       setLoading(false);
       console.log('Feedback loading state set to false');
     }
-  }, []);
+  }, [auth, speechId]);
 
-    const handleClickGenerarRetroalimentacion = () => {
-      if (transcriptionDetails) {
-        handleFeedback();
-      }
-    };
+  useEffect(() => {
+    if (speechId) {
+      handleFeedback();
+    }
+  }, [speechId, handleFeedback]);
 
-  if (!transcriptionDetails) {
-    return (
-      <Typography variant="body1" sx={{ textAlign: 'center' }}>
-        Realiza la transcripción antes de obtener retroalimentación.
-      </Typography>
-    );
-  } else {
-    return (
+  return (
       <div>
-       <Box sx={{ display: 'flex', justifyContent: 'center', paddingBottom: '1rem' }}>
-          <Button variant="contained" color="primary" onClick={handleClickGenerarRetroalimentacion}>
-            Generar Retroalimentación
-          </Button>
-        </Box>
         {feedbackDetails && (
           <>
             <Typography variant="h5" gutterBottom>Retroalimentación Basada en el discurso</Typography>
@@ -81,7 +77,7 @@ export const FeedbackContent = (transcriptionDetails) => {
                   <Typography variant="h6" gutterBottom>
                     <Lightbulb /> Redundancia:
                   </Typography>
-                  <Typography>{feedbackDetails.redundancia_discurso}</Typography>
+                  <Typography>{feedbackDetails.redundancia_resultado}</Typography>
                 </Box>
               </Paper>
             </Grid>
@@ -104,6 +100,5 @@ export const FeedbackContent = (transcriptionDetails) => {
         <LoadingBackdrop loading={loading} message="Proporcionando retroalimentación..." />
       </div>
     );
-  }
 };
 

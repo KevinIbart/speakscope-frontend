@@ -14,15 +14,15 @@ import { HistoryPage } from './pages/HistoryPage';
 import ProfilePage from './pages/ProfilePage';
 
 function App() {
-  const { user } =  useAuth();
   
+  const { user } = useAuth();
   return (
     
       <BrowserRouter>
         <Routes>
           <Route path="dashboard" element={<ProtectedRoute><DashboardPage/></ProtectedRoute>}>
             <Route path="transcription" element={<TranscriptionPage/>} />
-            <Route path="feedback" element={<FeedbackPage/>} />
+            <Route path="feedback/:speechId" element={<FeedbackPage/>} />
             <Route path="history" element={<HistoryPage/>} />
             <Route path="profile" element={<ProfilePage/>} />
           </Route>
@@ -45,8 +45,26 @@ function App() {
               )
             }
           />
-          <Route path="login" element={<LoginPage />} />
-          <Route path="register" element={<RegisterPage />} />
+          <Route
+          path="login"
+          element={
+            user ? (
+              <Navigate to="/home" />
+            ) : (
+              <LoginPage />
+            )
+          }
+        />
+        <Route
+          path="register"
+          element={
+            user ? (
+              <Navigate to="/home"/>
+            ) : (
+              <RegisterPage />
+            )
+          }
+        />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>

@@ -1,20 +1,39 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Container, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Divider } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import {
+  Container,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  CardActions,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider,
+  Grid,
+} from '@mui/material';
+import { Delete, Feed, MenuOpen } from '@mui/icons-material';
 import axios from 'axios';
 import LoadingBackdrop from './LoadingBackdrop';
-import { Delete, MenuOpen } from '@mui/icons-material';
+import { authContext } from '../../context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 
 export function SpeechList() {
   const [speechHistory, setSpeechHistory] = useState([]);
   const [selectedSpeech, setSelectedSpeech] = useState(null);
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const auth = useContext(authContext);
 
   const handleHistory = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get('https://apis.speakscope.tech/discurso/discurso/');
+      const response = await axios.get(`https://apis.speakscope.tech/discurso/usuario/`, {
+        headers: {
+          'Authorization': await auth.getToken(),
+        },
+      });
       setSpeechHistory(response.data);
     } catch (error) {
       console.error('Error getting history:', error.response?.status, error.response?.data || error.message);
@@ -22,91 +41,131 @@ export function SpeechList() {
       setLoading(false);
       console.log('History loading state set to false');
     }
-  }, []);
+  }, [auth]);
 
   const selectSpeechFromHistory = (speech) => {
     setSelectedSpeech(speech);
     setOpenDialog(true);
   };
 
+  const navigate = useNavigate();
+
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
-
-
+  const handleFeedbackPage = (speechId) => {
+    navigate(`/dashboard/feedback/${speechId}`);
+  };
 
   const handleDeleteSpeech = () => {
-    const { id } = selectedSpeech;
-
-    console.log('Deleting speech:', selectedSpeech);
-
-    axios.delete(`https://apis.speakscope.tech/discurso/discurso/${id}`)
-      .then((response) => {
-        console.log('Speech deleted successfully:', response.data);
-      })
-      .catch((error) => {
-        console.error('Error deleting speech:', error.response?.status, error.response?.data || error.message);
-      });
+    if (selectedSpeech) {
+      const { id } = selectedSpeech;
+  
+      console.log('Deleting speech:', selectedSpeech);
+  
+      axios
+        .delete(`https://apis.speakscope.tech/discurso/discurso/del/${id}`)
+        .then((response) => {
+          console.log('Speech deleted successfully:', response.data);
+          handleHistory();
+        })
+        .catch((error) => {
+          console.error('Error deleting speech:', error.response?.status, error.response?.data || error.message);
+        });
+    } else {
+      console.error('Cannot delete speech: selectedSpeech is null');
+    }
   };
 
   useEffect(() => {
     handleHistory();
   }, [handleHistory]);
 
-  const columns = [
-    { field: 'id', headerName: 'ID' },
-    { field: 'resumen', headerName: 'Resumen', flex: 2 },
-    {
-      field: 'actions',
-      headerName: 'Acciones',
-      flex: 1,
-      renderCell: (params) => (
+  return (
+    <Container sx={{ paddingTop: '2rem', width: '100%' }}>
+      {speechHistory.length === 0 ? (
         <div>
-          <Button variant="outlined" color="primary" onClick={() => selectSpeechFromHistory(params.row)}>
-            <MenuOpen/>
-          </Button>
-          <Button variant="outlined" color="secondary" onClick={handleDeleteSpeech}>
-            <Delete/>
+          <Typography variant="body1">Aún no hay ningún discurso.</Typography>
+          <Button variant="outlined" color="primary" component={Link} to="/dashboard/transcription">
+            Ir a la Transcripción
           </Button>
         </div>
-      ),
-    },
-  ];
+      ) : (
+        <Grid container spacing={2}>
+          {speechHistory.map((speech) => (
+            <Grid item key={speech.id} xs={12} sm={6} md={4} lg={12}>
+              <Card sx={{ minWidth: 200, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardContent style={{ flex: 1 }}>
+                  <Typography variant="h6" gutterBottom>
+                    DISCURSO {speech.id}
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    RESUMEN: {speech.resumen}
+                  </Typography>
+                </CardContent>
 
-  return (
-    <Container sx={{ paddingTop: '2rem', width: '200%' }}> {/* Set width as needed */}
-      <div style={{ height: 400, width: '100%' }}>
-        <DataGrid
-          rows={speechHistory}
-          columns={columns}
-          pageSize={5}
-          onSelectionModelChange={(newSelection) => {
-            if (newSelection.selectionModel.length > 0) {
-              const selectedIndex = newSelection.selectionModel[0];
-              selectSpeechFromHistory(speechHistory[selectedIndex]);
-            }
-          }}
-        />
-      </div>
+                <CardActions sx={{ justifyContent: 'center' }}>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => selectSpeechFromHistory(speech)}
+                  >
+                    <MenuOpen />
+                  </Button>
+
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={() => handleFeedbackPage(speech.id)}
+                  >
+                    <Feed />
+                  </Button>
+
+                  <Button variant="outlined" color="secondary" onClick={handleDeleteSpeech}>
+                    <Delete />
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Detalles del Discurso</DialogTitle>
+        
+        <DialogTitle>DETALLES DEL DISCURSO</DialogTitle>
+        
         <DialogContent>
-          <Typography variant="body1">ID: {selectedSpeech?.id}</Typography>
-          <Divider/>
-          <Typography variant="body1">Resumen: {selectedSpeech?.resumen}</Typography>
-          <Divider/>
-          <Typography variant="body1">Transcripción: {selectedSpeech?.transcripcion}</Typography>
-          <Divider/>
-          <Typography variant="body1">Palabras Clave: {selectedSpeech?.palabrasClave}</Typography>
-          <Divider/>
-          <Typography variant="body1">Ideas Clave: {selectedSpeech?.ideasClave}</Typography>
+          <Typography variant="body1">ID {selectedSpeech?.id}</Typography>
+          <Divider style={{ margin: '8px 0' }}/>
+          <Typography variant="body1" style={{ display: 'block' }}>
+            RESUMEN <span style={{ display: 'block' }}>{selectedSpeech?.resumen}</span>
+          </Typography>
+          <Divider style={{ margin: '8px 0' }}/>
+          <Typography variant="body1" style={{ display: 'block'}}>
+            TRANSCRIPCIÓN <span style={{ display: 'block'}}>{selectedSpeech?.transcripcion}</span>
+          </Typography>
+          <Divider style={{ margin: '8px 0' }}/>
+          <Typography variant="body1" style={{ display: 'block' }}>
+            PALABRAS CLAVE <span style={{ display: 'block' }}>{selectedSpeech?.palabrasClave}</span>
+          </Typography>
+          <Divider style={{ margin: '8px 0' }}/>
+          <Typography variant="body1" style={{ display: 'block' }}>
+            IDEAS CLAVE <span style={{ display: 'block' }}>{selectedSpeech?.ideasClave}</span>
+          </Typography>
+          <Divider style={{ margin: '8px 0' }}/>
+          <Typography variant="body1" style={{ display: 'block' }}>
+            ANÁLISIS DE SENTIMIENTOS <span style={{ display: 'block' }}>{selectedSpeech?.Analisis_de_Sentimientos}</span>
+          </Typography>
+
         </DialogContent>
+
         <DialogActions>
           <Button onClick={handleCloseDialog} color="primary">
             Cerrar
           </Button>
         </DialogActions>
+        
       </Dialog>
 
       <LoadingBackdrop loading={loading} message="Cargando Historial" />

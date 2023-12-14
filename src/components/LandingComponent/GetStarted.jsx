@@ -42,32 +42,38 @@ const GetStarted = () => {
             Todo lo que necesitas saber para mejorar tu forma de hablar en público
           </Typography>
 
-          <Box sx={{ display: 'flex', flexDirection: 'row', gap: '1rem', mt:6}}>
-            <CustomButton
-              backgroundColor="#fff"
-              color="#1a4ed2"
-              buttonText="Transcripción"
-              getStartedBtn={true}
-            />
-            <CustomButton
-              backgroundColor="#fff"
-              color="#1a4ed2"
-              buttonText="Retroalimentación"
-              getStartedBtn={true}
-            />
-            <CustomButton
-              backgroundColor="#fff"
-              color="#1a4ed2"
-              buttonText="Sugerencias de Mejora"
-              getStartedBtn={true}
-            />
+          <Box sx={{ display: 'flex',
+               flexDirection: { xs: 'column', md: 'row' }, 
+               gap: { xs: '0.5rem', md: '1rem' }, 
+               mt: { xs: 3, md: 6 }, 
+               justifyContent: 'center',
+               alignItems: 'center',}}>
+
+              <CustomButton
+                backgroundColor="#fff"
+                color="#1a4ed2"
+                buttonText="Transcripción"
+                getStartedBtn={true}
+              />
+              <CustomButton
+                backgroundColor="#fff"
+                color="#1a4ed2"
+                buttonText="Retroalimentación"
+                getStartedBtn={true}
+              />
+              <CustomButton
+                backgroundColor="#fff"
+                color="#1a4ed2"
+                buttonText="Sugerencias de Mejora"
+                getStartedBtn={true}
+              />
           </Box>
         </Box>
 
         <img
           src="https://images.ecestaticos.com/Ic7x2Z4ibBZI025-eebeUmRf7k4=/0x0:2272x1278/1200x900/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F509%2F2a1%2Fa90%2F5092a1a904d262fedaee586985fb773a.jpg"
           alt="illustration"
-          style={{ maxWidth: "35%", borderRadius:"20px"}}
+          style={{ maxWidth: "35%", height:"auto", borderRadius:"20px",  marginBottom: '20px'}}
         />
       </CustomContainer>
     </CustomBox>

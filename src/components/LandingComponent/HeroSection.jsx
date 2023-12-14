@@ -59,6 +59,7 @@ const Hero = () => {
               buttonText="Empieza Ahora"
               heroBtn={true}
               component={Link} to="/register"
+              mb = "10 px"
             />
           </Box>
 

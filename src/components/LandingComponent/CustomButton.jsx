@@ -25,7 +25,7 @@ const CustomButton = ({
       borderColor: backgroundColor,
     },
     [theme.breakpoints.down("md")]: {
-      margin: (heroBtn || getStartedBtn) && theme.spacing(0, "auto", 3, "auto"),
+      margin: (heroBtn || getStartedBtn) && `${theme.spacing(0)} ${theme.spacing("auto")} ${theme.spacing(3)} ${theme.spacing("auto")}`,
       width: (heroBtn || getStartedBtn) && "90%",
     },
     [theme.breakpoints.down("sm")]: {

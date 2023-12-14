@@ -5,5 +5,5 @@ axios.defaults.headers.common['Access-Control-Allow-Methods'] = 'GET, POST, PUT,
 axios.defaults.headers.common['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
 
 
-export const apiUrl='https://apis.speakscope.tech/discurso/'
+export const apiUrl='https://apis.speakscope.tech/'
 

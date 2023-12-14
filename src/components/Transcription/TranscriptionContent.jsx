@@ -1,14 +1,14 @@
 
 import { Grid, Button, Typography, Paper, Box } from '@mui/material';
 import { NoteAdd, Key, Lightbulb, Description } from '@mui/icons-material';
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { useRef, useState } from 'react';
 import AudioUpload from './AudioUpload.jsx';
 import WaveformDisplay from './WaveformDisplay.jsx';
 import LoadingBackdrop from './LoadingBackdrop.jsx';
 import axios from 'axios';
-
+import { authContext } from '../../context/AuthContext.jsx';
 
 
 export default function TranscriptionContent() {
@@ -17,6 +17,8 @@ export default function TranscriptionContent() {
   const wavesurferRef = useRef(null);
   const waveformRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const user = useContext(authContext)
+
   const handleUpload = async () => {
     setLoading(true);
 
@@ -24,19 +26,33 @@ export default function TranscriptionContent() {
       const formData = new FormData();
       formData.append('audio_file', file);
 
+
       const response = await axios.post(
         'https://apis.speakscope.tech/discurso/transcribe-audio/',
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
+            'Authorization': await user.getToken(),
           },
-          
+
         }
       );
+      console.lo
+      console.log(response.data);
       setTranscriptionDetails(response.data);
-    } catch (error) {
-      console.error('Error uploading file:', error.response?.status, error.response?.data || error.message);
+    }catch (error) {
+      console.log(error); 
+      if (axios.isCancel(error)) {
+        console.log('Request canceled:', error.message);
+      } else if (error.response) {
+        console.error('Error de respuesta:', error.response.data);
+        console.error('Código de estado:', error.response.status);
+      } else if (error.request) {
+        console.error('Error de solicitud:', error.request);
+      } else {
+        console.error('Error durante la configuración de la solicitud:', error.message);
+      }
     } finally {
       setLoading(false);
     }

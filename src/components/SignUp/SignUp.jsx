@@ -6,8 +6,8 @@
   import Paper from '@mui/material/Paper';
   import { Link } from '@mui/material';
   import { useAuth } from '../../context/AuthContext'
-  import { toast, ToastContainer } from 'react-toastify'; // Importa la biblioteca de toasts
-  import 'react-toastify/dist/ReactToastify.css'; // Importa los estilos de toasts
+  import { toast, ToastContainer } from 'react-toastify'; 
+  import 'react-toastify/dist/ReactToastify.css'; 
 import { useNavigate } from 'react-router-dom';
 
 
@@ -78,8 +78,8 @@ import { useNavigate } from 'react-router-dom';
         case 'password':
           if (!formData.password.trim()) {
             newErrors.password = 'Ingrese su contraseña';
-          } else if (!/^([A-Z])[A-Za-z\d@$!%*?&]{8,}$/.test(formData.password)) {
-            newErrors.password = 'La contraseña debe tener al menos 8 caracteres y contener al menos una mayúscula y un número.';
+          } else if (!/^[A-Za-z\d@$!%*?&]{8,}$/.test(formData.password)) {
+            newErrors.password = 'La contraseña debe tener al menos 8 caracteres y al menos un número. No caracteres especiales.';
           } else {
             delete newErrors.password;
           }

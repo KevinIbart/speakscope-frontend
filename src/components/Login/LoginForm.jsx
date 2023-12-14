@@ -8,6 +8,7 @@ import { Link } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+
 export const LoginForm = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -26,9 +27,11 @@ export const LoginForm = () => {
       [target.name]: target.value,
     });
   };
+  
 
   const handleBlur = (fieldName) => {
     const newErrors = { ...errors };
+  
     switch (fieldName) {
       case 'email':
         if (!formData.email.trim()) {
@@ -39,18 +42,28 @@ export const LoginForm = () => {
           delete newErrors.email;
         }
         break;
+  
       case 'password':
         if (!formData.password.trim()) {
           newErrors.password = 'Ingrese su contraseña';
+        } else if (!/^[A-Za-z\d@$!%*?&]{8,}$/.test(formData.password)) {
+          newErrors.password =
+            'La contraseña debe tener al menos 8 caracteres y al menos un número. No caracteres especiales.';
         } else {
           delete newErrors.password;
         }
         break;
+  
       default:
         break;
     }
+    if (newErrors.password === 'La contraseña no es correcta') {
+      console.log('La contraseña ingresada no es correcta. Por favor, verifica tu contraseña.');
+    }
+  
     setErrors(newErrors);
-  };
+  };  
+  
 
   const validateForm = () => {
     const newErrors = {};
@@ -68,24 +81,34 @@ export const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     setLoading(true);
-
+  
     if (validateForm()) {
       try {
         await auth.login(formData.email, formData.password);
         navigate('/home');
       } catch (error) {
         console.error('Error during login:', error);
-        setErrors({ general: 'Error durante el inicio de sesión. Por favor, inténtalo de nuevo.' });
+  
+        if (error.code === 'auth/user-not-found') {
+          setErrors({ email: 'Usuario no encontrado. Por favor, verifica tu correo.' });
+        } else if (error.code === 'auth/wrong-password') {
+          setErrors({ password: 'Contraseña incorrecta. Por favor, verifica tu contraseña.' });
+        } else if (error.code == 'auth/invalid-credential'){
+          setErrors({ general: 'Credenciales incorrectas. Verifica bien tu email y contraseña' });
+        }
+        else {
+          setErrors({ general: 'Error durante el inicio de sesión. Por favor, inténtalo de nuevo.' });
+        }
       }
     } else {
       console.log('Formulario inválido. Por favor, corrija los errores.');
     }
-
+  
     setLoading(false);
   };
-
+  
   const handleGoogleLogin = async () => {
     try {
       await auth.loginWithGoogle();

@@ -62,7 +62,7 @@ const Hero = () => {
             </Typography>
             <Divider/>
             <Box sx={{ mt:2, flex: "2", marginRight: '1rem'}}>
-                <Button component={Link} to="/dashboard/transcription">
+                <Button component={Link} to="/dashboard/history">
                   <CustomButton
                   backgroundColor="#1a4ed2"
                   color="#fff"

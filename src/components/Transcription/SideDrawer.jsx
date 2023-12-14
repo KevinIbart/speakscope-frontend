@@ -79,11 +79,11 @@ export function SideDrawer() {
   
   const getFirstWord = (fullName) => {
     if (!fullName || typeof fullName !== 'string') {
-      return ""; // Return an empty string if fullName is undefined or not a string
+      return "";
     }
   
     const words = fullName.split(" ");
-    return words.length > 0 ? words[0] : ""; // Return the first word
+    return words.length > 0 ? words[0] : ""; 
   };
   
   return (
