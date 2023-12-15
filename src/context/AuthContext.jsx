@@ -24,20 +24,22 @@ export const useAuth = () => {
 export function AuthProvider({children}){
     const [user, setUser] = useState(null);
 
-    const getToken = async () =>{
-        if (user === null) {
-            console.error('User not logged in')
-            return null;
-        }
-        try {
-            const token = await getIdToken(user);
-            console.log(token);
-            return token;
-        } catch (error) {
-            console.error('Error fetching token:', error);
-            return null;
-        }
-    }
+    const getToken = async () => {
+      if (user === null) {
+        console.error('User not logged in');
+        return null;
+      }
+    
+      try {
+        
+        const token = await getIdToken(auth.currentUser);
+        console.log(token);
+        return token;
+      } catch (error) {
+        console.error('Error fetching token:', error);
+        return null;
+      }
+    };
 
 
     const register = async (email, password, firstName, lastName) => {

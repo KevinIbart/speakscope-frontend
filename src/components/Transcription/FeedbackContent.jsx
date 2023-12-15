@@ -45,6 +45,16 @@ export const FeedbackContent = () => {
               <Paper elevation={3}>
                 <Box p={2}>
                   <Typography variant="h6" gutterBottom>
+                    <Lightbulb /> ID:
+                  </Typography>
+                  <Typography>{feedbackDetails.retroalimentacion_id}</Typography>
+                </Box>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sx={{ paddingTop: '1rem', paddingBottom: '1rem' }}>
+              <Paper elevation={3}>
+                <Box p={2}>
+                  <Typography variant="h6" gutterBottom>
                     <Lightbulb /> Claridad:
                   </Typography>
                   <Typography>{feedbackDetails.claridad_resultado}</Typography>

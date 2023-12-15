@@ -24,6 +24,7 @@ export function SpeechList() {
   const [selectedSpeech, setSelectedSpeech] = useState(null);
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [feedbackDetails, setFeedbackDetails] = useState(null);
   const auth = useContext(authContext);
 
   const handleHistory = useCallback(async () => {
@@ -43,9 +44,23 @@ export function SpeechList() {
     }
   }, [auth]);
 
-  const selectSpeechFromHistory = (speech) => {
-    setSelectedSpeech(speech);
-    setOpenDialog(true);
+  const selectSpeechFromHistory = async (speech) => {
+    try {
+      const authToken = await auth.getToken(); 
+      const feedbackResponse = await axios.get(`https://apis.speakscope.tech/discurso/retro/buscar/${speech.id}`, {
+        headers: {
+          'Authorization': authToken
+        },
+      });
+
+      console.log('Feedback Response:', feedbackResponse.data);
+
+      setSelectedSpeech(speech);
+      setFeedbackDetails(feedbackResponse.data);
+      setOpenDialog(true);
+    } catch (error) {
+      console.error('Error getting feedback details:', error.response?.status, error.response?.data || error.message);
+    }
   };
 
   const navigate = useNavigate();
@@ -53,25 +68,27 @@ export function SpeechList() {
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
+
   const handleFeedbackPage = (speechId) => {
     navigate(`/dashboard/feedback/${speechId}`);
   };
 
-  const handleDeleteSpeech = () => {
+  const handleDeleteSpeech = async () => {
     if (selectedSpeech) {
       const { id } = selectedSpeech;
   
-      console.log('Deleting speech:', selectedSpeech);
-  
-      axios
-        .delete(`https://apis.speakscope.tech/discurso/discurso/del/${id}`)
-        .then((response) => {
-          console.log('Speech deleted successfully:', response.data);
-          handleHistory();
-        })
-        .catch((error) => {
-          console.error('Error deleting speech:', error.response?.status, error.response?.data || error.message);
+      try {
+        const authToken = await auth.getToken(); 
+        const response = await axios.delete(`https://apis.speakscope.tech/discurso/discurso/del/${id}`, {
+          headers: {
+            Authorization: authToken,
+          },
         });
+        console.log('Speech deleted successfully:', response.data);
+        handleHistory();
+      } catch (error) {
+        console.error('Error deleting speech:', error.response?.status, error.response?.data || error.message);
+      }
     } else {
       console.error('Cannot delete speech: selectedSpeech is null');
     }
@@ -136,7 +153,8 @@ export function SpeechList() {
         <DialogTitle>DETALLES DEL DISCURSO</DialogTitle>
         
         <DialogContent>
-          <Typography variant="body1">ID {selectedSpeech?.id}</Typography>
+          
+        <Typography variant="body1" style={{ display: 'block', fontWeight: 'bold' }}>DETALLES DE TRANSCRIPCIÓN</Typography>
           <Divider style={{ margin: '8px 0' }}/>
           <Typography variant="body1" style={{ display: 'block' }}>
             RESUMEN <span style={{ display: 'block' }}>{selectedSpeech?.resumen}</span>
@@ -155,9 +173,33 @@ export function SpeechList() {
           </Typography>
           <Divider style={{ margin: '8px 0' }}/>
           <Typography variant="body1" style={{ display: 'block' }}>
-            ANÁLISIS DE SENTIMIENTOS <span style={{ display: 'block' }}>{selectedSpeech?.Analisis_de_Sentimientos}</span>
+            ANÁLISIS DE SENTIMIENTOS <span style={{ display: 'block' }}>{selectedSpeech?.sentimiento}</span>
           </Typography>
+          <Divider style={{ margin: '8px 0' }}/>
 
+          <Divider style={{ margin: '8px 0' }}/>
+          
+          <Typography variant="body1" style={{ display: 'block', fontWeight: 'bold' }}>RETROALIMENTACIÓN</Typography>
+          <Divider style={{ margin: '8px 0' }}/>
+          <Typography variant="body1" style={{ display: 'block' }}>
+            CLARIDAD <span style={{ display: 'block' }}>{feedbackDetails?.claridad}</span>
+          </Typography>
+          <Divider style={{ margin: '8px 0' }}/>
+          <Typography variant="body1" style={{ display: 'block'}}>
+            COHERENCIA <span style={{ display: 'block'}}>{feedbackDetails?.coherencia}</span>
+          </Typography>
+          <Divider style={{ margin: '8px 0' }}/>
+          <Typography variant="body1" style={{ display: 'block' }}>
+            MULETILLAS <span style={{ display: 'block' }}>{feedbackDetails?.muletillas}</span>
+          </Typography>
+          <Divider style={{ margin: '8px 0' }}/>
+          <Typography variant="body1" style={{ display: 'block' }}>
+            REDUNDANCIA <span style={{ display: 'block' }}>{feedbackDetails?.redundancia}</span>
+          </Typography>
+          <Divider style={{ margin: '8px 0' }}/>
+          <Typography variant="body1" style={{ display: 'block' }}>
+            SUGERENCIAS DE MEJORA <span style={{ display: 'block' }}>{feedbackDetails?.sugerencia_mejora}</span>
+          </Typography> 
         </DialogContent>
 
         <DialogActions>
